@@ -4,9 +4,15 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract Event is AccessControl {
-    uint public _startTime;
-    uint public _endTime;
+    uint256 public _startTime;
+    uint256 public _endTime;
     string private _metadata;
+
+    enum RSVPResponse {
+        YES,
+        NO,
+        MAYBE
+    }
 
     bytes32 public constant CREATOR = keccak256("CREATOR");
     bytes32 public constant INVITED = keccak256("INVITED");
@@ -17,10 +23,28 @@ contract Event is AccessControl {
         _;
     }
 
-    // create event
+    // events
+    event StartTimeModified(address indexed eventAddress, uint256 newSTime);
+    event EndTimeModified(address indexed eventAddress, uint256 newETime);
+    event MetadataModified(address indexed eventAddress, string newMetadata);
+    event AttendeeInvited(
+        address indexed eventAddress,
+        address indexed attendee
+    );
+    event AttendeeUninvited(
+        address indexed eventAddress,
+        address indexed attendee
+    );
+    event AttendeeRsvpd(
+        address indexed eventAddress,
+        address indexed attendee,
+        RSVPResponse response
+    );
+    event CommentAdded(address indexed eventAddress, string commment);
+
     constructor(
-        uint stime,
-        uint etime,
+        uint256 stime,
+        uint256 etime,
         string memory metadata,
         address[] memory attendees,
         address creator
@@ -30,28 +54,44 @@ contract Event is AccessControl {
         grantRole(DEFAULT_ADMIN_ROLE, address(this));
         grantRole(CREATOR, creator);
         _metadata = metadata;
-        for (uint i = 0; i < attendees.length; i++) {
+        for (uint256 i = 0; i < attendees.length; i++) {
             _invite(attendees[i]);
         }
     }
 
-    // update event
-    function modifyStartTime(uint time) public eventNotEnded onlyRole(CREATOR) {
+    // update start time
+    function modifyStartTime(uint256 time)
+        public
+        eventNotEnded
+        onlyRole(CREATOR)
+    {
         require(time >= block.timestamp, "Invalid Request");
         _startTime = time;
+        emit StartTimeModified(address(this), time);
     }
 
-    function modifyEndTime(uint time) public eventNotEnded onlyRole(CREATOR) {
+    // update end time
+    function modifyEndTime(uint256 time)
+        public
+        eventNotEnded
+        onlyRole(CREATOR)
+    {
         require(time >= _startTime, "Invalid Request");
         _endTime = time;
+        emit EndTimeModified(address(this), time);
     }
 
-    function modifyEvent(
-        string memory metadata
-    ) public eventNotEnded onlyRole(CREATOR) {
+    // update event metadata
+    function modifyEvent(string memory metadata)
+        public
+        eventNotEnded
+        onlyRole(CREATOR)
+    {
         _metadata = metadata;
+        emit MetadataModified(address(this), metadata);
     }
 
+    // invite new attendee
     function invite(address attendee) public onlyRole(CREATOR) eventNotEnded {
         _invite(attendee);
     }
@@ -62,13 +102,29 @@ contract Event is AccessControl {
             "Invalid Request"
         );
         grantRole(INVITED, attendee);
+        emit AttendeeInvited(address(this), attendee);
     }
 
     function uninvite(address attendee) public onlyRole(CREATOR) eventNotEnded {
         revokeRole(INVITED, attendee);
+        emit AttendeeUninvited(address(this), attendee);
     }
 
-    function rsvp() public onlyRole(INVITED) eventNotEnded {
+    function rsvp(RSVPResponse response)
+        public
+        onlyRole(INVITED)
+        eventNotEnded
+    {
         grantRole(RSVPD, msg.sender);
+        emit AttendeeRsvpd(address(this), msg.sender, response);
+    }
+
+    function addComment(string memory commment)
+        public
+        onlyRole(CREATOR)
+        eventNotEnded
+    {
+        // emit event
+        emit CommentAdded(address(this), commment);
     }
 }

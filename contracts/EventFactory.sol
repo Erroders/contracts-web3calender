@@ -6,13 +6,21 @@ import "./Event.sol";
 contract EventFactory {
     constructor() {}
 
+    event EventCreated(
+        address indexed eventAddress,
+        uint256 stime,
+        uint256 etime,
+        string metadata,
+        address[] attendees
+    );
+
     function createEvent(
-        uint stime,
-        uint etime,
+        uint256 stime,
+        uint256 etime,
         string memory metadata,
         address[] memory attendees
-    ) public returns (address) {
+    ) public {
         Event e = new Event(stime, etime, metadata, attendees, msg.sender);
-        return address(e);
+        emit EventCreated(address(e), stime, etime, metadata, attendees);
     }
 }
