@@ -8,6 +8,7 @@ contract EventFactory {
 
     event EventCreated(
         address indexed eventAddress,
+        address indexed creator,
         uint256 stime,
         uint256 etime,
         string metadata,
@@ -21,6 +22,13 @@ contract EventFactory {
         address[] memory attendees
     ) public {
         Event e = new Event(stime, etime, metadata, attendees, msg.sender);
-        emit EventCreated(address(e), stime, etime, metadata, attendees);
+        emit EventCreated(
+            address(e),
+            msg.sender,
+            stime,
+            etime,
+            metadata,
+            attendees
+        );
     }
 }
