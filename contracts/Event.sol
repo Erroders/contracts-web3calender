@@ -51,8 +51,9 @@ contract Event is AccessControl {
     ) {
         require(stime >= block.timestamp, "Invalid Start Time");
         require(etime >= _startTime, "Invalid End Time");
-        grantRole(DEFAULT_ADMIN_ROLE, address(this));
-        grantRole(CREATOR, creator);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE, address(this));
+        _grantRole(CREATOR, creator);
         _metadata = metadata;
         for (uint256 i = 0; i < attendees.length; i++) {
             _invite(attendees[i]);
@@ -60,33 +61,27 @@ contract Event is AccessControl {
     }
 
     // update start time
-    function modifyStartTime(uint256 time)
-        public
-        eventNotEnded
-        onlyRole(CREATOR)
-    {
+    function modifyStartTime(
+        uint256 time
+    ) public eventNotEnded onlyRole(CREATOR) {
         require(time >= block.timestamp, "Invalid Request");
         _startTime = time;
         emit StartTimeModified(address(this), time);
     }
 
     // update end time
-    function modifyEndTime(uint256 time)
-        public
-        eventNotEnded
-        onlyRole(CREATOR)
-    {
+    function modifyEndTime(
+        uint256 time
+    ) public eventNotEnded onlyRole(CREATOR) {
         require(time >= _startTime, "Invalid Request");
         _endTime = time;
         emit EndTimeModified(address(this), time);
     }
 
     // update event metadata
-    function modifyEvent(string memory metadata)
-        public
-        eventNotEnded
-        onlyRole(CREATOR)
-    {
+    function modifyEvent(
+        string memory metadata
+    ) public eventNotEnded onlyRole(CREATOR) {
         _metadata = metadata;
         emit MetadataModified(address(this), metadata);
     }
@@ -110,20 +105,16 @@ contract Event is AccessControl {
         emit AttendeeUninvited(address(this), attendee);
     }
 
-    function rsvp(RSVPResponse response)
-        public
-        onlyRole(INVITED)
-        eventNotEnded
-    {
+    function rsvp(
+        RSVPResponse response
+    ) public onlyRole(INVITED) eventNotEnded {
         grantRole(RSVPD, msg.sender);
         emit AttendeeRsvpd(address(this), msg.sender, response);
     }
 
-    function addComment(string memory commment)
-        public
-        onlyRole(CREATOR)
-        eventNotEnded
-    {
+    function addComment(
+        string memory commment
+    ) public onlyRole(CREATOR) eventNotEnded {
         // emit event
         emit CommentAdded(address(this), commment);
     }

@@ -1,9 +1,14 @@
 {
-  "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
-    "hardhat": "^2.12.3"
-  },
-  "dependencies": {
-    "@openzeppelin/contracts": "^4.8.0"
-  }
+    "devDependencies": {
+        "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+        "hardhat": "^2.12.3"
+    },
+    "scripts": {
+        "deploy": "npx hardhat compile && npx hardhat run scripts/deploy.ts --network mumbai"
+    },
+    "dependencies": {
+        "@openzeppelin/contracts": "^4.8.0",
+        "axios": "^1.2.0",
+        "dotenv": "^16.0.3"
+    }
 }
